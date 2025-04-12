@@ -1,0 +1,16 @@
+- I want to create a client-only Typescript React app that loads a set of log files.
+- It should use MUI for the UI. 
+- Each log file will contain one JSON object per line. 
+- The object will have a timestamp attribute, as well as a set of other arbitrary attributes.
+- The main view of the app should have two segments, with one above the other.
+- The top segment will contain a type of graph, with parallel horizontal lines one above the other. There will be one line per file loaded.
+  - The lines represent timelines for each file.
+  - Along the lines, there will be a dot for each log entry.
+  - The x-axis should have labels describing the time interval
+  - It's ok if we need to use some kind of third-party library to render this type of graph.
+  - The idea is to be able to easily get a sense of how log entries are distributed in time across all the loaded files.
+- The bottom segment should be a table with the union of the log entries of all files.
+- There should be one column per unique attribute in any of the entries in any of the log files.
+- It should be possible to select which columns are visible.
+- It should be possible to apply a regex filter on the entire JSON object, and this will filter the entries used to populate both the table and the graph across all log files.
+- It should be possible to sort on all visible columns.
