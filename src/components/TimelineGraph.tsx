@@ -23,7 +23,7 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
       }));
   });
 
-  const fileNames = data.map((fileData) => fileData[0]?.fileName || 'Unknown File'); // Extract file names for y-axis labels
+  const fileNames = processedData.map((fileData, index) => fileData.length > 0 ? fileData[0].fileName : `File ${index + 1}`); // Ensure only uploaded files are represented
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -48,14 +48,20 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
           dataKey="x"
           name="Time"
           domain={['auto', 'auto']}
-          tickFormatter={(tick) => new Date(tick).toISOString().split('T')[1].split('Z')[0]} // Format as HH:MM:SS in UTC
+          tickFormatter={(tick) => {
+            const date = new Date(tick);
+            return `${date.toISOString().split('T')[0]} ${date.toISOString().split('T')[1].split('Z')[0]}`; // Format as YYYY-MM-DD HH:MM:SS
+          }}
         />
         <YAxis
           type="number"
           dataKey="y"
           name="File Index"
           tickFormatter={(tick) => fileNames[tick] || 'Unknown File'}
+          tickCount={fileNames.length}
           tick={{ dx: -10 }} // Add padding to the left of the labels
+          domain={['dataMin', 'dataMax']}
+          interval={0}
         />
         <Tooltip
           cursor={{ strokeDasharray: '3 3' }}
