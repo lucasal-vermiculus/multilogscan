@@ -1,7 +1,5 @@
 import React from 'react';
 import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import config from '../../config.json';
-import get from 'lodash/get';
 
 interface TimelineGraphProps {
   data: Array<{ [key: string]: any }[]>;
@@ -20,9 +18,12 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
       .map((entry) => ({
         x: new Date(entry.timestamp).getTime(),
         y: fileIndex,
+        fileName: entry.fileName, // Include file name for rendering on the y-axis
         ...entry,
       }));
   });
+
+  const fileNames = data.map((fileData) => fileData[0]?.fileName || 'Unknown File'); // Extract file names for y-axis labels
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -31,7 +32,7 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
           top: 20,
           right: 20,
           bottom: 20,
-          left: 20,
+          left: 250, // Increased left margin to ensure labels are fully visible
         }}
       >
         <CartesianGrid />
@@ -49,12 +50,27 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
           domain={['auto', 'auto']}
           tickFormatter={(tick) => new Date(tick).toISOString().split('T')[1].split('Z')[0]} // Format as HH:MM:SS in UTC
         />
-        <YAxis type="number" dataKey="y" name="File Index" />
+        <YAxis
+          type="number"
+          dataKey="y"
+          name="File Index"
+          tickFormatter={(tick) => fileNames[tick] || 'Unknown File'}
+          tick={{ dx: -10 }} // Add padding to the left of the labels
+        />
         <Tooltip
           cursor={{ strokeDasharray: '3 3' }}
-          formatter={(value, name) =>
-            name === 'x' ? new Date(value).toISOString() : value
-          }
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              const entry = payload[0].payload;
+              return (
+                <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '5px' }}>
+                  <p>{`File: ${entry.fileName}`}</p>
+                  <p>{`Timestamp: ${new Date(entry.x).toISOString()}`}</p>
+                </div>
+              );
+            }
+            return null;
+          }}
         />
       </ScatterChart>
     </ResponsiveContainer>
