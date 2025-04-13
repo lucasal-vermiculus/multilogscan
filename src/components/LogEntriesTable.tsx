@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
 import { Button } from '@mui/material';
+import config from '../../config.json';
 
 interface LogEntriesTableProps {
   data: Array<{ [key: string]: any }>;
 }
-
-const config = {
-  timestampField: 'timestamp',
-};
 
 // Utility function to flatten nested objects
 const flattenObject = (obj: any, parentKey = '', result: any = {}) => {

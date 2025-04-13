@@ -1,18 +1,29 @@
 import React from 'react';
 import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import config from '../../config.json';
+import get from 'lodash/get';
 
 interface TimelineGraphProps {
-  data: Array<{ timestamp: string; [key: string]: any }[]>;
+  data: Array<{ [key: string]: any }[]>;
 }
 
 const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
-  const processedData = data.map((fileData, fileIndex) =>
-    fileData.map((entry) => ({
-      x: new Date(entry.timestamp).getTime(),
-      y: fileIndex,
-      ...entry,
-    }))
-  );
+  const calculateSamplingRate = (totalEntries: number): number => {
+    if (totalEntries > 1000) return Math.ceil(totalEntries / 100); // Sample 1 out of every 100 entries for large datasets
+    if (totalEntries > 500) return Math.ceil(totalEntries / 50); // Sample 1 out of every 50 entries for medium datasets
+    return 1; // No sampling for smaller datasets
+  };
+
+  const processedData = data.map((fileData, fileIndex) => {
+    const samplingRate = calculateSamplingRate(fileData.length);
+    return fileData
+      .filter((_, index) => index % samplingRate === 0) // Sample the data dynamically
+      .map((entry) => ({
+        x: new Date(get(entry, config.timestampField)).getTime(),
+        y: fileIndex,
+        ...entry,
+      }));
+  });
 
   return (
     <ResponsiveContainer width="100%" height={300}>
