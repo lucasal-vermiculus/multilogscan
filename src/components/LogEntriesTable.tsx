@@ -30,14 +30,16 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
     if (data.length > 0) {
       const flattenedData = data.map((row) => flattenObject(row));
       const uniqueKeys = Array.from(new Set(flattenedData.flatMap(Object.keys)));
+      const ignoredKeys = ['timestamp', 'fileName', 'rawJson', 'logLineNumber'];
 
       setColumns([
-        { field: 'timestamp', headerName: 'Timestamp', flex: 1 },
-        { field: 'fileName', headerName: 'Log File', flex: 1 },
+        { field: 'timestamp', headerName: 'timestamp', flex: 1 },
+        { field: 'fileName', headerName: 'file', flex: 1 },
+        { field: 'logLineNumber', headerName: 'line', flex: 1 },
         ...uniqueKeys
-          .filter((key) => key !== config.timestampField && key !== 'fileName' && key !== 'rawJson')
-          .map((key) => ({ field: key, headerName: key.charAt(0).toUpperCase() + key.slice(1), flex: 1 })),
-        { field: 'rawJson', headerName: 'Raw JSON', flex: 2 },
+          .filter((key) => !ignoredKeys.includes(key))
+          .map((key) => ({ field: key, headerName: key, flex: 1 })),
+        { field: 'rawJson', headerName: 'JSON', flex: 2 },
       ]);
     }
   }, [data]);

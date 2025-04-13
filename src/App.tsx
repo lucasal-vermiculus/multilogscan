@@ -96,7 +96,7 @@ function App() {
                   return null;
                 }
 
-                return { ...entry, fileName: file.name, timestamp: timestampValue };
+                return { ...entry, fileName: file.name, timestamp: timestampValue, logLineNumber: index + 1 };
               }).filter(Boolean);
             } else {
               throw new Error('Not a JSON array');
@@ -137,7 +137,7 @@ function App() {
                   return null;
                 }
 
-                return { ...parsed, fileName: file.name, timestamp: timestampValue };
+                return { ...parsed, fileName: file.name, timestamp: timestampValue, logLineNumber: index + 1 };
               } catch (parseError) {
                 console.log(`Error parsing line ${index + 1} in file ${file.name}:`, parseError);
                 return null;
