@@ -32,7 +32,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
       const uniqueKeys = Array.from(new Set(flattenedData.flatMap(Object.keys)));
 
       setColumns([
-        { field: config.timestampField, headerName: 'Timestamp', flex: 1 },
+        { field: 'timestamp', headerName: 'Timestamp', flex: 1 },
         { field: 'fileName', headerName: 'Log File', flex: 1 },
         ...uniqueKeys
           .filter((key) => key !== config.timestampField && key !== 'fileName' && key !== 'rawJson')

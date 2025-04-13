@@ -10,7 +10,6 @@ interface TimelineGraphProps {
 const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
   const calculateSamplingRate = (totalEntries: number): number => {
     if (totalEntries > 1000) return Math.ceil(totalEntries / 100); // Sample 1 out of every 100 entries for large datasets
-    if (totalEntries > 500) return Math.ceil(totalEntries / 50); // Sample 1 out of every 50 entries for medium datasets
     return 1; // No sampling for smaller datasets
   };
 
@@ -19,7 +18,7 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
     return fileData
       .filter((_, index) => index % samplingRate === 0) // Sample the data dynamically
       .map((entry) => ({
-        x: new Date(get(entry, config.timestampField)).getTime(),
+        x: new Date(entry.timestamp).getTime(),
         y: fileIndex,
         ...entry,
       }));

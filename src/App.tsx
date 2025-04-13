@@ -59,24 +59,34 @@ function App() {
             const parsedContent = JSON.parse(content);
             if (Array.isArray(parsedContent)) {
               logs = parsedContent.map((entry, index) => {
-                const timestampField = config.timestampField;
-                const timestampRegex = new RegExp(config.timestampRegex);
+                let timestampValue;
+                for (const field of config.timestampFields) {
+                  const fieldValue = resolveNestedPath(entry, field);
+                  if (fieldValue) {
+                    // Try parsing as UNIX timestamp in milliseconds
+                    if (!isNaN(Number(fieldValue))) {
+                      timestampValue = new Date(Number(fieldValue)).toISOString();
+                      break;
+                    }
 
-                let timestampValue = resolveNestedPath(entry, timestampField);
-                if (timestampValue) {
-                  // Try to parse as UNIX timestamp in milliseconds
-                  if (!isNaN(Number(timestampValue))) {
-                    timestampValue = new Date(Number(timestampValue)).toISOString();
-                  } else if (!timestampRegex.test(timestampValue)) {
-                    console.log(`Skipping entry ${index + 1} in file ${file.name}: Invalid timestamp`);
-                    return null;
+                    // Try each regex in turn
+                    for (const regex of config.timestampRegexes) {
+                      if (new RegExp(regex).test(fieldValue)) {
+                        timestampValue = new Date(fieldValue).toISOString();
+                        break;
+                      }
+                    }
+
+                    if (timestampValue) break;
                   }
-                } else {
-                  console.log(`Skipping entry ${index + 1} in file ${file.name}: Timestamp value is empty or undefined`);
+                }
+
+                if (!timestampValue) {
+                  console.log(`Skipping entry ${index + 1} in file ${file.name}: No valid timestamp found`);
                   return null;
                 }
 
-                return { ...entry, fileName: file.name };
+                return { ...entry, fileName: file.name, timestamp: timestampValue };
               }).filter(Boolean);
             } else {
               throw new Error('Not a JSON array');
@@ -90,24 +100,34 @@ function App() {
               }
               try {
                 const parsed = JSON.parse(line);
-                const timestampField = config.timestampField;
-                const timestampRegex = new RegExp(config.timestampRegex);
+                let timestampValue;
+                for (const field of config.timestampFields) {
+                  const fieldValue = resolveNestedPath(parsed, field);
+                  if (fieldValue) {
+                    // Try parsing as UNIX timestamp in milliseconds
+                    if (!isNaN(Number(fieldValue))) {
+                      timestampValue = new Date(Number(fieldValue)).toISOString();
+                      break;
+                    }
 
-                let timestampValue = resolveNestedPath(parsed, timestampField);
-                if (timestampValue) {
-                  // Try to parse as UNIX timestamp in milliseconds
-                  if (!isNaN(Number(timestampValue))) {
-                    timestampValue = new Date(Number(timestampValue)).toISOString();
-                  } else if (!timestampRegex.test(timestampValue)) {
-                    console.log(`Skipping line ${index + 1} in file ${file.name}: Invalid timestamp`);
-                    return null;
+                    // Try each regex in turn
+                    for (const regex of config.timestampRegexes) {
+                      if (new RegExp(regex).test(fieldValue)) {
+                        timestampValue = new Date(fieldValue).toISOString();
+                        break;
+                      }
+                    }
+
+                    if (timestampValue) break;
                   }
-                } else {
-                  console.log(`Skipping line ${index + 1} in file ${file.name}: Timestamp value is empty or undefined`);
+                }
+
+                if (!timestampValue) {
+                  console.log(`Skipping line ${index + 1} in file ${file.name}: No valid timestamp found`);
                   return null;
                 }
 
-                return { ...parsed, fileName: file.name };
+                return { ...parsed, fileName: file.name, timestamp: timestampValue };
               } catch (parseError) {
                 console.log(`Error parsing line ${index + 1} in file ${file.name}:`, parseError);
                 return null;
