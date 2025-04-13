@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CssBaseline, Container, Box, Button, TextField } from '@mui/material';
 import TimelineGraph from './components/TimelineGraph';
 import LogEntriesTable from './components/LogEntriesTable';
 import config from '../config.json';
 import get from 'lodash/get';
+import { debounce } from 'lodash';
 
 // Utility function to resolve nested paths
 type NestedObject = { [key: string]: any };
@@ -33,6 +34,15 @@ function App() {
   const [filterRegex, setFilterRegex] = useState<string>('');
   const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([]);
   const [originalTableData, setOriginalTableData] = useState<Array<{ [key: string]: any }>>([]);
+
+  const debouncedSetFilterRegex = useCallback(
+    debounce((value: string) => setFilterRegex(value), 300),
+    []
+  );
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSetFilterRegex(event.target.value);
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('File upload triggered');
@@ -182,8 +192,7 @@ function App() {
             label="Filter Regex"
             variant="outlined"
             fullWidth
-            value={filterRegex}
-            onChange={(e) => setFilterRegex(e.target.value)}
+            onChange={handleFilterChange}
             onKeyPress={handleFilterKeyPress}
             sx={{ my: 2 }}
           />
