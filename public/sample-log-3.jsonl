@@ -1,0 +1,2 @@
+{"timestamp": "2025-04-13T10:00:00Z", "level": "info", "message": "User login", "details": {"userId": "12345", "ip": "192.168.1.1", "location": {"city": "New York", "country": "USA"}}}
+{"timestamp": "2025-04-13T10:05:00Z", "level": "error", "message": "Database connection failed", "details": {"errorCode": "DB_CONN_ERR", "retry": true, "server": {"host": "db1.example.com", "port": 5432}}}
