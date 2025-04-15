@@ -44,9 +44,19 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
           row.fileName === selectedEntry.fileName
       );
       if (rowIndex !== -1) {
-        apiRef.current?.setPage(Math.floor(rowIndex / 10)); // Navigate to the correct page (assuming 10 rows per page)
-        apiRef.current?.scrollToIndexes({ rowIndex }); // Scroll to the item
-        apiRef.current?.selectRow(rowIndex, true); // Select the row with the checkbox
+        const pageSize = apiRef.current?.state.pagination.paginationModel.pageSize
+        apiRef.current?.setPage(Math.floor(rowIndex / pageSize)); // Navigate to the correct page
+        apiRef.current?.scrollToIndexes({ rowIndex }); // Scroll to the item within the table
+
+        // Scroll the browser window to the table row
+        setTimeout(() => {
+          const rowElement = document.querySelector(`[data-id='${rowIndex}']`);
+          if (rowElement) {
+            rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 250); // Delay scrolling by 100ms
+
+        apiRef.current?.selectRow(rowIndex, true, true); // Select the row with the checkbox and uncheck the others
       }
     }
   }, [selectedEntry, rows]);
@@ -76,10 +86,12 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
   };
 
   return (
-    <div style={{ height: 'calc(100vh - 200px)', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div>
       <Button variant="contained" onClick={handleAutosize} style={{ marginBottom: '10px' }}>
         Autosize Columns
       </Button>
+      </div>
       <DataGrid
         apiRef={apiRef}
         rows={rows}
