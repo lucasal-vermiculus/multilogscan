@@ -3,6 +3,7 @@ import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
 import { Button } from '@mui/material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import JsonDialog from './JsonDialog';
 
 interface LogEntriesTableProps {
   data: Array<{ [key: string]: any }>;
@@ -12,6 +13,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
   const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const apiRef = useGridApiRef();
 
   useEffect(() => {
@@ -46,6 +48,11 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
         ? { mouseX: event.clientX - 2, mouseY: event.clientY - 4 }
         : null
     );
+  };
+
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedRow(null);
   };
 
   const handleClose = () => {
@@ -84,15 +91,14 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
       >
         <MenuItem
           onClick={() => {
-            if (selectedRow) {
-              alert(JSON.stringify(selectedRow, null, 2));
-            }
-            handleClose();
+            setDialogOpen(true);
+            setContextMenu(null);
           }}
         >
           View JSON
         </MenuItem>
       </Menu>
+      <JsonDialog open={dialogOpen} onClose={handleCloseDialog} json={selectedRow ? JSON.parse(selectedRow.rawJson) : null} />
     </div>
   );
 };
