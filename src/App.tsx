@@ -1,16 +1,10 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { CssBaseline, Container, Box, Button, TextField } from '@mui/material';
 import TimelineGraph from './components/TimelineGraph';
 import LogEntriesTable from './components/LogEntriesTable';
-import config from '../config.json';
-import get from 'lodash/get';
-import { debounce } from 'lodash';
+import { parseFileContent } from './utils/fileParser';
 
-// Utility function to resolve nested paths
-type NestedObject = { [key: string]: any };
-const resolveNestedPath = (obj: NestedObject, path: string): any => {
-  return get(obj, path);
-};
+
 
 // Utility function to match the simpler query language
 const matchesQuery = (query: string, text: string): boolean => {
@@ -54,88 +48,7 @@ function App() {
         console.log(`Finished reading file: ${file.name}`);
         const content = e.target?.result as string;
         try {
-          let logs;
-          try {
-            // Check if the content is a JSON array
-            const parsedContent = JSON.parse(content);
-            if (Array.isArray(parsedContent)) {
-              logs = parsedContent.map((entry, index) => {
-                let timestampValue;
-                for (const field of config.timestampFields) {
-                  const fieldValue = resolveNestedPath(entry, field);
-                  if (fieldValue) {
-                    // Try parsing as UNIX timestamp in milliseconds
-                    if (!isNaN(Number(fieldValue))) {
-                      timestampValue = new Date(Number(fieldValue)).toISOString();
-                      break;
-                    }
-
-                    // Try each regex in turn
-                    for (const regex of config.timestampRegexes) {
-                      if (new RegExp(regex).test(fieldValue)) {
-                        timestampValue = new Date(fieldValue).toISOString();
-                        break;
-                      }
-                    }
-
-                    if (timestampValue) break;
-                  }
-                }
-
-                if (!timestampValue) {
-                  console.log(`Skipping entry ${index + 1} in file ${file.name}: No valid timestamp found`);
-                  return null;
-                }
-
-                return { ...entry, fileName: file.name, timestamp: timestampValue, logLineNumber: index + 1 };
-              }).filter(Boolean);
-            } else {
-              throw new Error('Not a JSON array');
-            }
-          } catch {
-            // Fallback to line-by-line parsing
-            logs = content.split('\n').map((line, index) => {
-              if (!line.trim()) {
-                console.log(`Skipping line ${index + 1} in file ${file.name}: Empty line`);
-                return null;
-              }
-              try {
-                const parsed = JSON.parse(line);
-                let timestampValue;
-                for (const field of config.timestampFields) {
-                  const fieldValue = resolveNestedPath(parsed, field);
-                  if (fieldValue) {
-                    // Try parsing as UNIX timestamp in milliseconds
-                    if (!isNaN(Number(fieldValue))) {
-                      timestampValue = new Date(Number(fieldValue)).toISOString();
-                      break;
-                    }
-
-                    // Try each regex in turn
-                    for (const regex of config.timestampRegexes) {
-                      if (new RegExp(regex).test(fieldValue)) {
-                        timestampValue = new Date(fieldValue).toISOString();
-                        break;
-                      }
-                    }
-
-                    if (timestampValue) break;
-                  }
-                }
-
-                if (!timestampValue) {
-                  console.log(`Skipping line ${index + 1} in file ${file.name}: No valid timestamp found`);
-                  return null;
-                }
-
-                return { ...parsed, fileName: file.name, timestamp: timestampValue, logLineNumber: index + 1 };
-              } catch (parseError) {
-                console.log(`Error parsing line ${index + 1} in file ${file.name}:`, parseError);
-                return null;
-              }
-            }).filter(Boolean);
-          }
-
+          const logs = parseFileContent(content, file.name);
           console.log(`Parsed ${logs.length} valid log entries from file: ${file.name}`);
           allLogs.push(logs);
           unionLogs.push(...logs);
