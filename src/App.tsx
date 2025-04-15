@@ -26,7 +26,6 @@ function App() {
   const [logData, setLogData] = useState<Array<{ [key: string]: any }[]>>([]);
   const [tableData, setTableData] = useState<Array<{ [key: string]: any }>>([]);
   const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([]);
-  const [originalTableData, setOriginalTableData] = useState<Array<{ [key: string]: any }>>([]);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +55,6 @@ function App() {
           if (allLogs.length === files.length) {
             console.log('All files processed');
             setOriginalLogData(allLogs);
-            setOriginalTableData(unionLogs);
             setLogData(allLogs);
             setTableData(unionLogs);
           }
