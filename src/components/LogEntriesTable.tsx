@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, gridFilteredSortedRowEntriesSelector, gridFilteredSortedRowIdsSelector, useGridApiRef } from '@mui/x-data-grid';
 import { Button } from '@mui/material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,14 +38,20 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
 
   useEffect(() => {
     if (selectedEntry) {
+      const currentRows = gridFilteredSortedRowEntriesSelector(apiRef);
       const rowIndex = rows.findIndex(
         (row) =>
           row.logLineNumber === selectedEntry.logLineNumber &&
           row.fileName === selectedEntry.fileName
       );
+      const currentRowIndex = currentRows.findIndex(
+        (row) =>
+          row.model.logLineNumber === selectedEntry.logLineNumber &&
+          row.model.fileName === selectedEntry.fileName
+      );
       if (rowIndex !== -1) {
         const pageSize = apiRef.current?.state.pagination.paginationModel.pageSize
-        apiRef.current?.setPage(Math.floor(rowIndex / pageSize)); // Navigate to the correct page
+        apiRef.current?.setPage(Math.floor(currentRowIndex / pageSize)); // Navigate to the correct page
         apiRef.current?.scrollToIndexes({ rowIndex }); // Scroll to the item within the table
 
         // Scroll the browser window to the table row
