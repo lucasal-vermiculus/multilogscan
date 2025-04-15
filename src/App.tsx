@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { CssBaseline, Container, Box, Button, TextField } from '@mui/material';
 import TimelineGraph from './components/TimelineGraph';
 import LogEntriesTable from './components/LogEntriesTable';
@@ -31,18 +31,9 @@ const matchesQuery = (query: string, text: string): boolean => {
 function App() {
   const [logData, setLogData] = useState<Array<{ [key: string]: any }[]>>([]);
   const [tableData, setTableData] = useState<Array<{ [key: string]: any }>>([]);
-  const [filterRegex, setFilterRegex] = useState<string>('');
   const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([]);
   const [originalTableData, setOriginalTableData] = useState<Array<{ [key: string]: any }>>([]);
-
-  const debouncedSetFilterRegex = useCallback(
-    debounce((value: string) => setFilterRegex(value), 300),
-    []
-  );
-
-  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedSetFilterRegex(event.target.value);
-  };
+  const filterInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('File upload triggered');
@@ -167,10 +158,13 @@ function App() {
   const handleFilterKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       try {
-        const filteredTableData = originalTableData.filter((entry) => matchesQuery(filterRegex, JSON.stringify(entry)));
-        const filteredLogData = originalLogData.map((fileData) => fileData.filter((entry) => matchesQuery(filterRegex, JSON.stringify(entry))));
+        const filter = filterInputRef.current?.value || ''; // Read the value directly from the ref
+        console.log(`Filter applied: ${filter}`);
+        const filteredLogData = originalLogData
+          .map((fileData) => fileData.filter((entry) => matchesQuery(filter, JSON.stringify(entry))))
+          .filter((fileData) => fileData.length > 0); // Remove empty file groups
 
-        setTableData(filteredTableData);
+        setTableData(filteredLogData.flat()); // Flatten filteredLogData for table
         setLogData(filteredLogData);
       } catch {
         console.log('Invalid query syntax');
@@ -192,7 +186,7 @@ function App() {
             label="Filter Regex"
             variant="outlined"
             fullWidth
-            onChange={handleFilterChange}
+            inputRef={filterInputRef} // Attach the ref to the input field
             onKeyPress={handleFilterKeyPress}
             sx={{ my: 2 }}
           />
