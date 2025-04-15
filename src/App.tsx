@@ -4,8 +4,6 @@ import TimelineGraph from './components/TimelineGraph';
 import LogEntriesTable from './components/LogEntriesTable';
 import { parseFileContent } from './utils/fileParser';
 
-
-
 // Utility function to match the simpler query language
 const matchesQuery = (query: string, text: string): boolean => {
   const parts = query.split('|'); // Split by alternation
@@ -26,6 +24,7 @@ function App() {
   const [logData, setLogData] = useState<Array<{ [key: string]: any }[]>>([]);
   const [tableData, setTableData] = useState<Array<{ [key: string]: any }>>([]);
   const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([]);
+  const [selectedEntry, setSelectedEntry] = useState<any | null>(null);
   const filterInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,11 +102,11 @@ function App() {
           />
 
           <Box sx={{ my: 4 }}>
-            <TimelineGraph data={logData} />
+            <TimelineGraph data={logData} setSelectedEntry={setSelectedEntry} />
           </Box>
 
           <Box sx={{ my: 4 }}>
-            <LogEntriesTable data={tableData} />
+            <LogEntriesTable data={tableData} selectedEntry={selectedEntry} />
           </Box>
         </Box>
       </Container>

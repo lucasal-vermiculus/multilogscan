@@ -7,9 +7,10 @@ import JsonDialog from './JsonDialog';
 
 interface LogEntriesTableProps {
   data: Array<{ [key: string]: any }>;
+  selectedEntry: any | null; // Added prop for selected entry
 }
 
-const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
+const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }) => {
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
   const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null);
@@ -34,6 +35,21 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
     logLineNumber: row.logLineNumber,
     rawJson: JSON.stringify(row),
   }));
+
+  useEffect(() => {
+    if (selectedEntry) {
+      const rowIndex = rows.findIndex(
+        (row) =>
+          row.logLineNumber === selectedEntry.logLineNumber &&
+          row.fileName === selectedEntry.fileName
+      );
+      if (rowIndex !== -1) {
+        apiRef.current?.setPage(Math.floor(rowIndex / 10)); // Navigate to the correct page (assuming 10 rows per page)
+        apiRef.current?.scrollToIndexes({ rowIndex }); // Scroll to the item
+        apiRef.current?.selectRow(rowIndex, true); // Select the row with the checkbox
+      }
+    }
+  }, [selectedEntry, rows]);
 
   const handleAutosize = () => {
     apiRef.current?.autosizeColumns({});

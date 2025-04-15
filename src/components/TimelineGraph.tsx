@@ -3,9 +3,10 @@ import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, Tooltip, Cart
 
 interface TimelineGraphProps {
   data: Array<{ [key: string]: any }[]>;
+  setSelectedEntry: (entry: any) => void; // Added prop for setting selected entry
 }
 
-const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
+const TimelineGraph: React.FC<TimelineGraphProps> = ({ data, setSelectedEntry }) => {
   const calculateSamplingRate = (totalEntries: number): number => {
     if (totalEntries > 1000) return Math.ceil(totalEntries / 100); // Sample 1 out of every 100 entries for large datasets
     return 1; // No sampling for smaller datasets
@@ -41,6 +42,13 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data }) => {
             key={index}
             data={fileData}
             fill={`hsl(${(index * 360) / data.length}, 70%, 50%)`}
+            onClick={(event) => {
+              const clickedEntry = event.payload;
+              console.log('Clicked entry:', clickedEntry); // Log the clicked entry
+              if (clickedEntry) {
+                setSelectedEntry(clickedEntry); // Update selected entry state
+              }
+            }}
           />
         ))}
         <XAxis
