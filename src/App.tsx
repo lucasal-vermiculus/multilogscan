@@ -98,7 +98,7 @@ function App() {
             variant="outlined"
             fullWidth
             inputRef={filterInputRef} // Attach the ref to the input field
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
             sx={{ my: 2 }}
           />
 
