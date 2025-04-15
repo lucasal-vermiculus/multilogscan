@@ -6,51 +6,28 @@ interface LogEntriesTableProps {
   data: Array<{ [key: string]: any }>;
 }
 
-// Utility function to flatten nested objects
-const flattenObject = (obj: any, parentKey = '', result: any = {}) => {
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const newKey = parentKey ? `${parentKey}.${key}` : key;
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        flattenObject(obj[key], newKey, result);
-      } else {
-        result[newKey] = obj[key];
-      }
-    }
-  }
-  return result;
-};
-
 const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const apiRef = useGridApiRef();
 
   useEffect(() => {
     if (data.length > 0) {
-      const flattenedData = data.map((row) => flattenObject(row));
-      const uniqueKeys = Array.from(new Set(flattenedData.flatMap(Object.keys)));
-      const ignoredKeys = ['timestamp', 'fileName', 'rawJson', 'logLineNumber'];
-
       setColumns([
-        { field: 'timestamp', headerName: 'timestamp', flex: 1 },
-        { field: 'fileName', headerName: 'file', flex: 1 },
-        { field: 'logLineNumber', headerName: 'line', flex: 1 },
-        ...uniqueKeys
-          .filter((key) => !ignoredKeys.includes(key))
-          .map((key) => ({ field: key, headerName: key, flex: 1 })),
+        { field: 'timestamp', headerName: 'Timestamp', flex: 1 },
+        { field: 'fileName', headerName: 'File', flex: 1 },
+        { field: 'logLineNumber', headerName: 'Line', flex: 1 },
         { field: 'rawJson', headerName: 'JSON', flex: 2 },
       ]);
     }
   }, [data]);
 
-  const rows = data.map((row, index) => {
-    const flattenedRow = flattenObject(row);
-    return {
-      id: index,
-      ...flattenedRow,
-      rawJson: JSON.stringify(row),
-    };
-  });
+  const rows = data.map((row, index) => ({
+    id: index,
+    timestamp: row.timestamp,
+    fileName: row.fileName,
+    logLineNumber: row.logLineNumber,
+    rawJson: JSON.stringify(row),
+  }));
 
   const handleAutosize = () => {
     apiRef.current?.autosizeColumns({});
