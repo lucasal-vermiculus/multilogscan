@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, useGridApiRef } from '@mui/x-data-grid';
 import { Button } from '@mui/material';
-import config from '../../config.json';
 
 interface LogEntriesTableProps {
   data: Array<{ [key: string]: any }>;
@@ -66,7 +65,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
         apiRef={apiRef}
         rows={rows}
         columns={columns}
-        initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
         checkboxSelection
         disableRowSelectionOnClick
       />
