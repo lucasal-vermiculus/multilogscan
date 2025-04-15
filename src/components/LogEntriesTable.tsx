@@ -34,15 +34,18 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data }) => {
   };
 
   return (
-    <div style={{ height: 400, width: '100%' }}>
-      <Button variant="contained" onClick={handleAutosize} style={{ marginBottom: '10px' }}>
-        Autosize Columns
-      </Button>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <div>
+        <Button variant="contained" onClick={handleAutosize} style={{ marginBottom: '10px' }}>
+          Autosize Columns
+        </Button>
+      </div>
       <DataGrid
         apiRef={apiRef}
         rows={rows}
         columns={columns}
-        initialState={{ pagination: { paginationModel: { pageSize: 100 } } }}
+        initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        pageSizeOptions={[10, 25, 50, 100]}
         checkboxSelection
         disableRowSelectionOnClick
       />
