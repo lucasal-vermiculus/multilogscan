@@ -62,7 +62,6 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 }, 250) // Delay scrolling by 100ms
 
                 apiRef.current?.selectRow(rowIndex, true, true) // Select the row with the checkbox and uncheck the others
-                console.log('Row selected:', rows[rowIndex])
             }
         }
     }, [selectedEntry, data])
@@ -75,17 +74,12 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
         event.preventDefault()
         const rowId = Number(event.currentTarget.getAttribute('data-id'))
         setSelectedRow(rows.find((row) => row.id === rowId))
-        console.log(
-            'Selected row:',
-            rows.find((row) => row.id === rowId),
-        )
         setContextMenu(contextMenu === null ? { mouseX: event.clientX - 2, mouseY: event.clientY - 4 } : null)
     }
 
     const handleCloseDialog = () => {
         setDialogOpen(false)
         setSelectedRow(null)
-        console.log('Set selectedRow to null')
     }
 
     const handleClose = () => {
