@@ -42,6 +42,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
             const rowIndex = rows.findIndex(
                 (row) => row.logLineNumber === selectedEntry.logLineNumber && row.fileName === selectedEntry.fileName,
             )
+            setSelectedRow(rows[rowIndex])
             const currentRowIndex = currentRows.findIndex(
                 (row) =>
                     row.model.logLineNumber === selectedEntry.logLineNumber &&
@@ -61,9 +62,10 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 }, 250) // Delay scrolling by 100ms
 
                 apiRef.current?.selectRow(rowIndex, true, true) // Select the row with the checkbox and uncheck the others
+                console.log('Row selected:', rows[rowIndex])
             }
         }
-    }, [selectedEntry, rows])
+    }, [selectedEntry, data])
 
     const handleAutosize = () => {
         apiRef.current?.autosizeColumns({})
@@ -73,16 +75,27 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
         event.preventDefault()
         const rowId = Number(event.currentTarget.getAttribute('data-id'))
         setSelectedRow(rows.find((row) => row.id === rowId))
+        console.log(
+            'Selected row:',
+            rows.find((row) => row.id === rowId),
+        )
         setContextMenu(contextMenu === null ? { mouseX: event.clientX - 2, mouseY: event.clientY - 4 } : null)
     }
 
     const handleCloseDialog = () => {
         setDialogOpen(false)
         setSelectedRow(null)
+        console.log('Set selectedRow to null')
     }
 
     const handleClose = () => {
         setContextMenu(null)
+    }
+
+    const openJsonDialog = () => {
+        if (selectedRow) {
+            setDialogOpen(true)
+        }
     }
 
     return (
@@ -91,6 +104,14 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 <Button variant="contained" onClick={handleAutosize} style={{ marginBottom: '10px' }}>
                     Autosize Columns
                 </Button>
+                <Button
+                    variant="contained"
+                    onClick={openJsonDialog}
+                    disabled={!selectedRow} // Enable only when a row is selected
+                    style={{ marginBottom: '10px' }}
+                >
+                    View Selected JSON
+                </Button>
             </div>
             <DataGrid
                 apiRef={apiRef}
@@ -98,8 +119,8 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 columns={columns}
                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
                 pageSizeOptions={[5, 10, 20, 50]}
-                checkboxSelection
-                disableRowSelectionOnClick
+                checkboxSelection={false}
+                onRowClick={(params) => setSelectedRow(params.row)}
                 slotProps={{
                     row: {
                         onContextMenu: handleContextMenu,
