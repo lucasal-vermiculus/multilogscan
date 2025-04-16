@@ -59,7 +59,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                     if (rowElement) {
                         rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
                     }
-                }, 250) // Delay scrolling by 100ms
+                }, 500) // Delay scrolling
 
                 apiRef.current?.selectRow(rowIndex, true, true) // Select the row with the checkbox and uncheck the others
             }
@@ -94,17 +94,16 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div>
-                <Button variant="contained" onClick={handleAutosize} style={{ marginBottom: '10px' }}>
-                    Autosize Columns
-                </Button>
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                 <Button
                     variant="contained"
                     onClick={openJsonDialog}
                     disabled={!selectedRow} // Enable only when a row is selected
-                    style={{ marginBottom: '10px' }}
                 >
                     View Selected JSON
+                </Button>
+                <Button variant="contained" onClick={handleAutosize}>
+                    Autosize Columns
                 </Button>
             </div>
             <DataGrid
@@ -112,7 +111,7 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 rows={rows}
                 columns={columns}
                 initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-                pageSizeOptions={[5, 10, 20, 50]}
+                pageSizeOptions={[10, 25, 50, 100]}
                 checkboxSelection={false}
                 onRowClick={(params) => setSelectedRow(params.row)}
                 slotProps={{
