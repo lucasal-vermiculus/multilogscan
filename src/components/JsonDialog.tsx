@@ -11,10 +11,20 @@ interface JsonDialogProps {
 
 const JsonDialog: React.FC<JsonDialogProps> = ({ open, onClose, json }) => {
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth>
             <DialogTitle>Entry JSON</DialogTitle>
             <DialogContent>
-                <SyntaxHighlighter language="json" style={materialLight} showLineNumbers>
+                <SyntaxHighlighter
+                    language="json"
+                    showLineNumbers
+                    style={materialLight}
+                    codeTagProps={{
+                        style: {
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word',
+                        },
+                    }}
+                >
                     {JSON.stringify(json, null, 2)}
                 </SyntaxHighlighter>
             </DialogContent>
