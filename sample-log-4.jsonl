@@ -1,0 +1,2 @@
+{"timestamp": "2025-04-13T11:00:00Z", "level": "warning", "message": "High memory usage", "details": {"process": "web-server", "memory": {"used": "1.5GB", "total": "2GB"}}}
+{"timestamp": "2025-04-13T11:10:00Z", "level": "info", "message": "File uploaded", "details": {"userId": "67890", "file": {"name": "report.pdf", "size": "2MB"}}}

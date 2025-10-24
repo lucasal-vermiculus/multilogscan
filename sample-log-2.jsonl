@@ -1,0 +1,3 @@
+{"timestamp": "2025-04-12T10:15:00Z", "level": "info", "message": "User logged in"}
+{"timestamp": "2025-04-12T10:20:00Z", "level": "error", "message": "File not found"}
+{"timestamp": "2025-04-12T10:25:00Z", "level": "debug", "message": "Debugging application flow"}
