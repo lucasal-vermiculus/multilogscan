@@ -37,8 +37,10 @@ function App() {
         }
 
         console.log(`Number of files selected: ${files.length}`)
-        const allLogs: Array<{ [key: string]: any }[]> = []
-        const unionLogs: Array<{ [key: string]: any }> = []
+        // We'll accumulate the newly uploaded files here, then append to existing state
+        const newAllLogs: Array<{ [key: string]: any }[]> = []
+        const newUnionLogs: Array<{ [key: string]: any }> = []
+        let processedCount = 0
 
         Array.from(files).forEach((file) => {
             console.log(`Reading file: ${file.name}`)
@@ -49,18 +51,23 @@ function App() {
                 try {
                     const logs = parseFileContent(content, file.name)
                     console.log(`Parsed ${logs.length} valid log entries from file: ${file.name}`)
-                    allLogs.push(logs)
-                    unionLogs.push(...logs)
-
-                    if (allLogs.length === files.length) {
-                        console.log('All files processed')
-                        setOriginalLogData(allLogs)
-                        setLogData(allLogs)
-                        setTableData(unionLogs)
-                        setIsLoaded(true)
-                    }
+                    newAllLogs.push(logs)
+                    newUnionLogs.push(...logs)
                 } catch (error) {
                     console.log(`Error processing file: ${file.name}`, error)
+                } finally {
+                    processedCount += 1
+                    // When all selected files are processed, append them to existing state
+                    if (processedCount === files.length) {
+                        console.log('All files processed; appending to existing data')
+                        setOriginalLogData((prev) => [...prev, ...newAllLogs])
+                        setLogData((prev) => [...prev, ...newAllLogs])
+                        setTableData((prev) => [...prev, ...newUnionLogs])
+                        setIsLoaded(true)
+
+                        // Reset the input so the same files can be uploaded again if needed
+                        if (event.target) event.target.value = ''
+                    }
                 }
             }
             reader.readAsText(file)
