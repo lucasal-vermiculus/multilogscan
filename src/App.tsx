@@ -86,7 +86,9 @@ function App() {
                     const logs = parseFileContent(content, file.name)
                     console.log(`Parsed ${logs.length} valid log entries from file: ${file.name}`)
                     newAllLogs.push(logs)
-                    newUnionLogs.push(...logs)
+                    for (const entry of logs) {
+                        newUnionLogs.push(entry)
+                    }
                 } catch (error) {
                     console.log(`Error processing file: ${file.name}`, error)
                 } finally {
