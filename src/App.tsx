@@ -38,12 +38,45 @@ function App() {
         }
 
         console.log(`Number of files selected: ${files.length}`)
+        // Build a set of already-uploaded filenames
+        const existingNames = new Set<string>(
+            originalLogData.map((fileGroup) => (fileGroup && fileGroup.length > 0 ? fileGroup[0].fileName : '')),
+        )
+
+        // Filter incoming files to avoid duplicates (either already uploaded or repeated in the same selection)
+        const seenInSelection = new Set<string>()
+        const skippedNames: string[] = []
+        const filesToProcess = Array.from(files).filter((file) => {
+            if (existingNames.has(file.name)) {
+                skippedNames.push(file.name)
+                return false
+            }
+            if (seenInSelection.has(file.name)) {
+                skippedNames.push(file.name)
+                return false
+            }
+            seenInSelection.add(file.name)
+            return true
+        })
+
+        if (skippedNames.length > 0) {
+            // Inform the user which files were skipped due to duplicate names
+            // Use a simple alert for now; can be replaced with a Snackbar for better UX
+            alert(`Skipped ${skippedNames.length} file(s) with duplicate names:\n${skippedNames.join('\n')}`)
+        }
+
+        if (filesToProcess.length === 0) {
+            // No new files to process; reset the input so the same selection can be attempted again later
+            if (event.target) event.target.value = ''
+            return
+        }
+
         // We'll accumulate the newly uploaded files here, then append to existing state
         const newAllLogs: Array<{ [key: string]: any }[]> = []
         const newUnionLogs: Array<{ [key: string]: any }> = []
         let processedCount = 0
 
-        Array.from(files).forEach((file) => {
+        filesToProcess.forEach((file) => {
             console.log(`Reading file: ${file.name}`)
             const reader = new FileReader()
             reader.onload = (e) => {
@@ -59,7 +92,7 @@ function App() {
                 } finally {
                     processedCount += 1
                     // When all selected files are processed, append them to existing state
-                    if (processedCount === files.length) {
+                    if (processedCount === filesToProcess.length) {
                         console.log('All files processed; appending to existing data')
                         setOriginalLogData((prev) => [...prev, ...newAllLogs])
                         setLogData((prev) => [...prev, ...newAllLogs])
