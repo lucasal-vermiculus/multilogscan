@@ -25,6 +25,7 @@ function App() {
     const [tableData, setTableData] = useState<Array<{ [key: string]: any }>>([])
     const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([])
     const [selectedEntry, setSelectedEntry] = useState<any | null>(null)
+    const [isLoaded, setIsLoaded] = useState(false)
     const filterInputRef = useRef<HTMLInputElement>(null)
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,6 +57,7 @@ function App() {
                         setOriginalLogData(allLogs)
                         setLogData(allLogs)
                         setTableData(unionLogs)
+                        setIsLoaded(true)
                     }
                 } catch (error) {
                     console.log(`Error processing file: ${file.name}`, error)
@@ -87,27 +89,40 @@ function App() {
             <CssBaseline />
             <Container maxWidth={false} sx={{ width: '100vw', padding: 0 }}>
                 <Box sx={{ my: 4, width: '100%' }}>
-                    <Button variant="contained" component="label">
-                        Upload Log Files
-                        <input type="file" hidden multiple onChange={handleFileUpload} />
-                    </Button>
+                    {!isLoaded ? (
+                        <Box
+                            sx={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <Button variant="contained" component="label" sx={{ fontSize: '1.05rem', py: 1.5, px: 3 }}>
+                                Upload Log Files
+                                <input type="file" hidden multiple onChange={handleFileUpload} />
+                            </Button>
+                        </Box>
+                    ) : (
+                        <>
+                            <Button variant="contained" component="label">
+                                Upload Log Files
+                                <input type="file" hidden multiple onChange={handleFileUpload} />
+                            </Button>
 
-                    <TextField
-                        label="Filter Regex"
-                        variant="outlined"
-                        fullWidth
-                        inputRef={filterInputRef} // Attach the ref to the input field
-                        onKeyDown={handleFilterKeyPress}
-                        sx={{ my: 2 }}
-                    />
+                            <TextField
+                                label="Filter Regex"
+                                variant="outlined"
+                                fullWidth
+                                inputRef={filterInputRef} // Attach the ref to the input field
+                                onKeyDown={handleFilterKeyPress}
+                                sx={{ my: 2 }}
+                            />
 
-                    <Box sx={{ my: 4 }}>
-                        <TimelineGraph data={logData} setSelectedEntry={setSelectedEntry} />
-                    </Box>
+                            <Box sx={{ my: 4 }}>
+                                <TimelineGraph data={logData} setSelectedEntry={setSelectedEntry} />
+                            </Box>
 
-                    <Box sx={{ my: 4 }}>
-                        <LogEntriesTable data={tableData} selectedEntry={selectedEntry} />
-                    </Box>
+                            <Box sx={{ my: 4 }}>
+                                <LogEntriesTable data={tableData} selectedEntry={selectedEntry} />
+                            </Box>
+                        </>
+                    )}
                 </Box>
             </Container>
         </>
