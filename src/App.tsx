@@ -23,6 +23,7 @@ const matchesQuery = (query: string, text: string): boolean => {
 function App() {
     const [logData, setLogData] = useState<Array<{ [key: string]: any }[]>>([])
     const [tableData, setTableData] = useState<Array<{ [key: string]: any }>>([])
+    // originalLogData is an array where each element is the array of parsed entries for one uploaded file
     const [originalLogData, setOriginalLogData] = useState<Array<{ [key: string]: any }[]>>([])
     const [selectedEntry, setSelectedEntry] = useState<any | null>(null)
     const [isLoaded, setIsLoaded] = useState(false)
@@ -91,6 +92,22 @@ function App() {
         }
     }
 
+    const handleRemoveFile = (fileName: string) => {
+        // Remove any file groups whose first entry's fileName matches the provided fileName
+        const newOriginal = originalLogData.filter((fileGroup) => {
+            if (!fileGroup || fileGroup.length === 0) return false
+            return fileGroup[0].fileName !== fileName
+        })
+
+        setOriginalLogData(newOriginal)
+        setLogData(newOriginal)
+        setTableData(newOriginal.flat())
+
+        if (newOriginal.length === 0) {
+            setIsLoaded(false)
+        }
+    }
+
     return (
         <>
             <CssBaseline />
@@ -111,6 +128,34 @@ function App() {
                                 Upload Log Files
                                 <input type="file" hidden multiple onChange={handleFileUpload} />
                             </Button>
+
+                            {/* Uploaded files list with remove action */}
+                            {originalLogData.length > 0 && (
+                                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', my: 2 }}>
+                                    {originalLogData.map((fileGroup, idx) => {
+                                        const name =
+                                            fileGroup && fileGroup.length > 0
+                                                ? fileGroup[0].fileName
+                                                : `File ${idx + 1}`
+                                        return (
+                                            <Box
+                                                key={`${name}-${idx}`}
+                                                sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                                            >
+                                                <Box sx={{ fontWeight: '500' }}>{name}</Box>
+                                                <Button
+                                                    variant="outlined"
+                                                    color="error"
+                                                    size="small"
+                                                    onClick={() => handleRemoveFile(name)}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </Box>
+                                        )
+                                    })}
+                                </Box>
+                            )}
 
                             <TextField
                                 label="Filter Regex"
