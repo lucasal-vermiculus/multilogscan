@@ -33,20 +33,37 @@ const matchesQuery = (query: string, text: string): boolean => {
 }
 
 function App() {
-    // All files currently displayed (after filter)
-    const [logData, setLogData] = useState<LogFile[]>([])
-
-    // Flat view of all entries currently displayed (after filter)
-    const [tableData, setTableData] = useState<LogEntry[]>([])
-
     // Ground truth: all uploaded files in full, unfiltered form
     const [originalLogData, setOriginalLogData] = useState<LogFile[]>([])
+
+    // Indices into originalLogData that match current filter
+    const [filteredIndices, setFilteredIndices] = useState<null | number[][]>(null)
 
     // Row currently highlighted/selected in UI
     const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null)
 
     const [isLoaded, setIsLoaded] = useState(false)
     const filterInputRef = useRef<HTMLInputElement>(null)
+
+    // A function that computes the a filtered view of originalLogData based on the filtered indices
+    const getFilteredLogData = (): LogFile[] => {
+        if (filteredIndices === null) {
+            return originalLogData
+        }
+
+        return originalLogData.map((logFile, fileIndex) => {
+            const filteredEntries = logFile.entries.filter((_, entryIndex) =>
+                filteredIndices[fileIndex]?.includes(entryIndex),
+            )
+            return { ...logFile, entries: filteredEntries }
+        })
+    }
+
+    // A function that computes the flattened view of originalLogData based on the filtered indices
+    const getFlatTableData = (): LogEntry[] => {
+        const filteredLogData = getFilteredLogData()
+        return filteredLogData.flatMap((logFile) => logFile.entries)
+    }
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         console.log('File upload triggered')
@@ -124,11 +141,6 @@ function App() {
                         setOriginalLogData((prev) => {
                             const updated = [...prev, ...newLogFiles]
 
-                            // Also update the filtered views to include everything (no filter yet)
-                            const newTableData = updated.flatMap((lf) => lf.entries)
-                            setTableData(newTableData)
-                            setLogData(updated)
-
                             // Mark that we have data
                             setIsLoaded(updated.length > 0)
 
@@ -150,25 +162,23 @@ function App() {
             const filter = filterInputRef.current?.value || ''
             console.log(`Filter applied: ${filter}`)
 
-            // For each file, keep only the entries whose JSON matches the query
-            const filteredLogFiles: LogFile[] = originalLogData
-                .map((logFile) => {
-                    const filteredEntries = logFile.entries.filter((entry) =>
-                        matchesQuery(filter, JSON.stringify(entry)),
-                    )
-                    return {
-                        ...logFile,
-                        entries: filteredEntries,
+            if (filter.trim() === '') {
+                setFilteredIndices(null)
+                return
+            }
+
+            // Create a two-dimensional array of filtered indices into originalLogData
+            // that matches the current filter
+            const newFilteredIndices: number[][] = originalLogData.map((logFile) => {
+                const indices: number[] = []
+                logFile.entries.forEach((entry, index) => {
+                    if (matchesQuery(filter, JSON.stringify(entry))) {
+                        indices.push(index)
                     }
                 })
-                // Drop files that ended up empty after filtering
-                .filter((logFile) => logFile.entries.length > 0)
-
-            // Flatten to feed the table
-            const flattenedEntries = filteredLogFiles.flatMap((lf) => lf.entries)
-
-            setLogData(filteredLogFiles)
-            setTableData(flattenedEntries)
+                return indices
+            })
+            setFilteredIndices(newFilteredIndices)
         }
     }
 
@@ -177,11 +187,6 @@ function App() {
         const newOriginal = originalLogData.filter((lf) => lf.fileName !== fileName)
 
         setOriginalLogData(newOriginal)
-
-        // After removal, no active filter is re-applied here; we just show everything remaining.
-        const newTableData = newOriginal.flatMap((lf) => lf.entries)
-        setTableData(newTableData)
-        setLogData(newOriginal)
 
         if (newOriginal.length === 0) {
             setIsLoaded(false)
@@ -237,7 +242,7 @@ function App() {
                             )}
 
                             <TextField
-                                label="Filter Regex"
+                                label="Filter"
                                 variant="outlined"
                                 fullWidth
                                 inputRef={filterInputRef}
@@ -246,14 +251,11 @@ function App() {
                             />
 
                             <Box sx={{ my: 4 }}>
-                                {/* Timeline probably wants data grouped by file.
-                                   We're giving it `LogFile[]`. */}
-                                <TimelineGraph data={logData} setSelectedEntry={setSelectedEntry} />
+                                <TimelineGraph data={getFilteredLogData()} setSelectedEntry={setSelectedEntry} />
                             </Box>
 
                             <Box sx={{ my: 4 }}>
-                                {/* Table wants flattened entries, plus selected entry to highlight */}
-                                <LogEntriesTable data={tableData} selectedEntry={selectedEntry} />
+                                <LogEntriesTable data={getFlatTableData()} selectedEntry={selectedEntry} />
                             </Box>
                         </>
                     )}
