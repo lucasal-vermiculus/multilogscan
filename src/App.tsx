@@ -16,20 +16,32 @@ export interface LogFile {
     entries: LogEntry[]
 }
 
-// Utility function to match the simpler query language
-const matchesQuery = (query: string, text: string): boolean => {
-    const parts = query.split('|') // Split by alternation
-    return parts.some((part) => {
-        const segments = part.split('*') // Split by wildcard
-        let lastIndex = 0
-        for (const segment of segments) {
-            if (segment === '') continue // Skip empty segments (e.g., leading/trailing *)
-            const index = text.indexOf(segment, lastIndex)
-            if (index === -1) return false // Segment not found
-            lastIndex = index + segment.length
-        }
-        return true
-    })
+// Utility function to match a simple query language
+const matchesQuery = (include: string, exclude: string, text: string): boolean => {
+    // Helper to check if text matches a pattern with | and * wildcards
+    const matchesPattern = (pattern: string, text: string): boolean => {
+        if (!pattern.trim()) return false
+        const parts = pattern.split('|') // Split by alternation
+        return parts.some((part) => {
+            const segments = part.split('*') // Split by wildcard
+            let lastIndex = 0
+            for (const segment of segments) {
+                if (segment === '') continue // Skip empty segments (e.g., leading/trailing *)
+                const index = text.indexOf(segment, lastIndex)
+                if (index === -1) return false // Segment not found
+                lastIndex = index + segment.length
+            }
+            return true
+        })
+    }
+
+    // If there's an exclude match, fail immediately
+    if (exclude && matchesPattern(exclude, text)) return false
+
+    // If include is empty, everything not excluded should pass
+    if (!include.trim()) return true
+
+    return matchesPattern(include, text)
 }
 
 function App() {
@@ -43,7 +55,8 @@ function App() {
     const [selectedEntry, setSelectedEntry] = useState<LogEntry | null>(null)
 
     const [isLoaded, setIsLoaded] = useState(false)
-    const filterInputRef = useRef<HTMLInputElement>(null)
+    const includeInputRef = useRef<HTMLInputElement>(null)
+    const excludeInputRef = useRef<HTMLInputElement>(null)
 
     // A function that computes the a filtered view of originalLogData based on the filtered indices
     const getFilteredLogData = (): LogFile[] => {
@@ -153,10 +166,12 @@ function App() {
 
     const handleFilterKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
-            const filter = filterInputRef.current?.value || ''
-            console.log(`Filter applied: ${filter}`)
+            const includeFilter = includeInputRef.current?.value || ''
+            const excludeFilter = excludeInputRef.current?.value || ''
 
-            if (filter.trim() === '') {
+            console.log(`Applying filters - Include: "${includeFilter}", Exclude: "${excludeFilter}"`)
+
+            if (includeFilter.trim() === '' && excludeFilter.trim() === '') {
                 setFilteredIndices(null)
                 return
             }
@@ -166,7 +181,7 @@ function App() {
             const newFilteredIndices: number[][] = originalLogData.map((logFile) => {
                 const indices: number[] = []
                 logFile.entries.forEach((entry, index) => {
-                    if (matchesQuery(filter, JSON.stringify(entry))) {
+                    if (matchesQuery(includeFilter, excludeFilter, JSON.stringify(entry))) {
                         indices.push(index)
                     }
                 })
@@ -236,10 +251,19 @@ function App() {
                             )}
 
                             <TextField
-                                label="Filter"
+                                label="Include"
                                 variant="outlined"
                                 fullWidth
-                                inputRef={filterInputRef}
+                                inputRef={includeInputRef}
+                                onKeyDown={handleFilterKeyPress}
+                                sx={{ my: 2 }}
+                            />
+
+                            <TextField
+                                label="Exclude"
+                                variant="outlined"
+                                fullWidth
+                                inputRef={excludeInputRef}
                                 onKeyDown={handleFilterKeyPress}
                                 sx={{ my: 2 }}
                             />
