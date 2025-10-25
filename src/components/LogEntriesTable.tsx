@@ -42,6 +42,15 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
         }))
     }, [data])
 
+    // Auto-resize columns whenever rows change
+    useEffect(() => {
+        const id = setTimeout(() => {
+            apiRef.current?.autosizeColumns({})
+        }, 0)
+
+        return () => clearTimeout(id)
+    }, [rows, apiRef])
+
     useEffect(() => {
         if (selectedEntry) {
             const currentRows = gridFilteredSortedRowEntriesSelector(apiRef)
@@ -71,10 +80,6 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
         }
     }, [selectedEntry, data])
 
-    const handleAutosize = () => {
-        apiRef.current?.autosizeColumns({})
-    }
-
     const handleContextMenu = (event: React.MouseEvent) => {
         event.preventDefault()
         const rowId = Number(event.currentTarget.getAttribute('data-id'))
@@ -99,18 +104,6 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <Button
-                    variant="contained"
-                    onClick={openJsonDialog}
-                    disabled={!selectedRow} // Enable only when a row is selected
-                >
-                    View Selected JSON
-                </Button>
-                <Button variant="contained" onClick={handleAutosize}>
-                    Autosize Columns
-                </Button>
-            </div>
             <DataGrid
                 apiRef={apiRef}
                 rows={rows}
