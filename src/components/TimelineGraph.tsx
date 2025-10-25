@@ -82,7 +82,7 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data, setSelectedEntry })
                                 <div style={{ backgroundColor: '#fff', padding: '10px', borderRadius: '5px' }}>
                                     <p>{`File: ${entry.fileName}`}</p>
                                     <p>{`Timestamp: ${new Date(entry.x).toISOString()}`}</p>
-                                    <p>{`Line: ${entry.logLineNumber}`}</p>
+                                    <p>{`Line: ${entry.lineNumber}`}</p>
                                 </div>
                             )
                         }

@@ -1,5 +1,6 @@
 import { get } from 'lodash'
 import config from '../../config.json'
+import { LogEntry, LogFile } from '../App'
 
 // Utility function to resolve nested paths
 type NestedObject = { [key: string]: any }
@@ -7,8 +8,8 @@ const resolveNestedPath = (obj: NestedObject, path: string): any => {
     return get(obj, path)
 }
 
-export const parseFileContent = (content: string, fileName: string): Array<{ [key: string]: any }> => {
-    let logs
+export const parseFileContent = (content: string, fileName: string): LogFile => {
+    let logs: LogEntry[]
     try {
         // Check if the content is a JSON array
         const parsedContent = JSON.parse(content)
@@ -32,12 +33,12 @@ export const parseFileContent = (content: string, fileName: string): Array<{ [ke
                     return null
                 }
             })
-            .filter(Boolean)
+            .filter((entry) => entry !== null)
     }
-    return logs
+    return { fileName, entries: logs }
 }
 
-const parseLogEntry = (entry: any, fileName: string, index: number): any => {
+const parseLogEntry = (entry: any, fileName: string, index: number): LogEntry | null => {
     let timestampValue
     for (const field of config.timestampFields) {
         const fieldValue = resolveNestedPath(entry, field)
@@ -62,5 +63,5 @@ const parseLogEntry = (entry: any, fileName: string, index: number): any => {
 
     if (!timestampValue) return null
 
-    return { ...entry, fileName, timestamp: timestampValue, logLineNumber: index + 1 }
+    return { content: entry, fileName, timestamp: timestampValue, lineNumber: index + 1 }
 }

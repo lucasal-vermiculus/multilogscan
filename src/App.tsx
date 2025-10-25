@@ -118,14 +118,8 @@ function App() {
 
                 try {
                     // Expect parseFileContent(content, fileName) -> LogEntry[]
-                    const parsedEntries = parseFileContent(content, file.name) as LogEntry[]
-                    console.log(`Parsed ${parsedEntries.length} valid log entries from file: ${file.name}`)
-
-                    // Build a LogFile object for this upload
-                    const logFile: LogFile = {
-                        fileName: file.name,
-                        entries: parsedEntries,
-                    }
+                    const logFile = parseFileContent(content, file.name)
+                    console.log(`Parsed ${logFile.entries.length} valid log entries from file: ${file.name}`)
 
                     newLogFiles.push(logFile)
                 } catch (error) {
