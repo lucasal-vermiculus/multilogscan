@@ -63,5 +63,7 @@ const parseLogEntry = (entry: any, fileName: string, index: number): LogEntry | 
 
     if (!timestampValue) return null
 
-    return { content: entry, fileName, timestamp: timestampValue, lineNumber: index + 1 }
+    const content = { ...entry, timestamp: timestampValue }
+
+    return { content, fileName, timestamp: timestampValue, lineNumber: index + 1 }
 }
