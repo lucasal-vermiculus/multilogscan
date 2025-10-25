@@ -1,8 +1,9 @@
 import React from 'react'
 import { ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import { LogFile } from '../App'
 
 interface TimelineGraphProps {
-    data: Array<{ [key: string]: any }[]>
+    data: LogFile[]
     setSelectedEntry: (entry: any) => void // Added prop for setting selected entry
 }
 
@@ -13,13 +14,12 @@ const TimelineGraph: React.FC<TimelineGraphProps> = ({ data, setSelectedEntry })
     }
 
     const processedData = data.map((fileData, fileIndex) => {
-        const samplingRate = calculateSamplingRate(fileData.length)
-        return fileData
+        const samplingRate = calculateSamplingRate(fileData.entries.length)
+        return fileData.entries
             .filter((_, index) => index % samplingRate === 0) // Sample the data dynamically
             .map((entry) => ({
                 x: new Date(entry.timestamp).getTime(),
                 y: fileIndex,
-                fileName: entry.fileName, // Include file name for rendering on the y-axis
                 ...entry,
             }))
     })
