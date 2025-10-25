@@ -96,12 +96,6 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
         setContextMenu(null)
     }
 
-    const openJsonDialog = () => {
-        if (selectedRow) {
-            setDialogOpen(true)
-        }
-    }
-
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             <DataGrid
