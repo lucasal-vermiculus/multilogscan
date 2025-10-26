@@ -9,6 +9,7 @@ export interface LogEntry {
     lineNumber: number
     content: { [key: string]: any }
     fileName: string
+    preview: string
 }
 
 export interface LogFile {

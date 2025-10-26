@@ -2,6 +2,8 @@ import { get } from 'lodash'
 import config from '../../config.json'
 import { LogEntry, LogFile } from '../App'
 
+const PREVIEW_MAX_LENGTH = 1000
+
 // Utility function to resolve nested paths
 type NestedObject = { [key: string]: any }
 const resolveNestedPath = (obj: NestedObject, path: string): any => {
@@ -65,5 +67,10 @@ const parseLogEntry = (entry: any, fileName: string, index: number): LogEntry | 
 
     const content = { ...entry, timestamp: timestampValue }
 
-    return { content, fileName, timestamp: timestampValue, lineNumber: index + 1 }
+    const preview =
+        (entry.result?._raw
+            ? entry.result?._raw.substring(0, PREVIEW_MAX_LENGTH)
+            : JSON.stringify(entry).substring(0, PREVIEW_MAX_LENGTH)) + '...'
+
+    return { content, fileName, timestamp: timestampValue, lineNumber: index + 1, preview }
 }

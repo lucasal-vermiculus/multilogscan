@@ -24,10 +24,10 @@ const LogEntriesTable: React.FC<LogEntriesTableProps> = ({ data, selectedEntry }
                 { field: 'fileName', headerName: 'File', flex: 1 },
                 { field: 'lineNumber', headerName: 'Line', flex: 1 },
                 {
-                    field: 'rawJson',
-                    headerName: 'JSON',
+                    field: 'preview',
+                    headerName: 'Content',
                     flex: 2,
-                    valueGetter: (_value, row) => JSON.stringify(row.content),
+                    valueGetter: (_value, row) => row.preview,
                 },
             ])
         }
