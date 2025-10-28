@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { CssBaseline, Container, Box, Button, TextField } from '@mui/material'
+import { CssBaseline, Container, Box, Button, TextField, Tooltip, IconButton, Typography } from '@mui/material'
 import TimelineGraph from './components/TimelineGraph'
 import LogEntriesTable from './components/LogEntriesTable'
 import { parseFileContent } from './utils/fileParser'
@@ -229,7 +229,6 @@ function App() {
                                 <input type="file" hidden multiple onChange={handleFileUpload} />
                             </Button>
 
-                            {/* Uploaded files list with remove action */}
                             {originalLogData.length > 0 && (
                                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', my: 2 }}>
                                     {originalLogData.map((logFile, idx) => (
@@ -251,23 +250,79 @@ function App() {
                                 </Box>
                             )}
 
-                            <TextField
-                                label="Include"
-                                variant="outlined"
-                                fullWidth
-                                inputRef={includeInputRef}
-                                onKeyDown={handleFilterKeyPress}
-                                sx={{ my: 2 }}
-                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                                <TextField
+                                    label="Include"
+                                    variant="outlined"
+                                    fullWidth
+                                    inputRef={includeInputRef}
+                                    onKeyDown={handleFilterKeyPress}
+                                />
 
-                            <TextField
-                                label="Exclude"
-                                variant="outlined"
-                                fullWidth
-                                inputRef={excludeInputRef}
-                                onKeyDown={handleFilterKeyPress}
-                                sx={{ my: 2 }}
-                            />
+                                <Tooltip
+                                    title={
+                                        <Box sx={{ maxWidth: 360 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                Simple query language
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Use <code>|</code> for OR (e.g. <code>error|fail</code>)
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Use <code>*</code> as a wildcard (e.g. <code>user*</code> matches
+                                                user123)
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Combine patterns: <code>*timeout*|*failed*</code>
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Press <strong>Enter</strong> to apply. Use the Exclude field to filter
+                                                out matching entries.
+                                            </Typography>
+                                        </Box>
+                                    }
+                                    placement="right"
+                                >
+                                    <IconButton aria-label="filter help" size="small">
+                                        <span style={{ fontSize: 14, lineHeight: 1 }}>ℹ️</span>
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
+
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, my: 2 }}>
+                                <TextField
+                                    label="Exclude"
+                                    variant="outlined"
+                                    fullWidth
+                                    inputRef={excludeInputRef}
+                                    onKeyDown={handleFilterKeyPress}
+                                />
+
+                                <Tooltip
+                                    title={
+                                        <Box sx={{ maxWidth: 360 }}>
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                                                Simple query language
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Same syntax as Include: <code>|</code> alternation and <code>*</code>
+                                                wildcard.
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Entries matching this pattern will be excluded from results.
+                                            </Typography>
+                                            <Typography variant="body2">
+                                                - Press <strong>Enter</strong> to apply.
+                                            </Typography>
+                                        </Box>
+                                    }
+                                    placement="right"
+                                >
+                                    <IconButton aria-label="exclude filter help" size="small">
+                                        <span style={{ fontSize: 14, lineHeight: 1 }}>ℹ️</span>
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
 
                             <Box sx={{ my: 4 }}>
                                 <TimelineGraph data={getFilteredLogData()} setSelectedEntry={setSelectedEntry} />
