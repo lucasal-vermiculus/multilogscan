@@ -34,12 +34,31 @@ export const parseFileContent = (content: string, fileName: string): LogFile => 
                     const parsed = JSON.parse(line)
                     return parseLogEntry(parsed, fileName, index)
                 } catch {
-                    return null
+                    return parseRawLine(line, fileName, index)
                 }
             })
             .filter((entry) => entry !== null)
     }
     return { fileName, entries: logs }
+}
+
+const parseRawLine = (line: string, fileName: string, index: number): LogEntry | null => {
+    for (const regex of config.timestampRegexes) {
+        const match = line.match(new RegExp(regex))
+        if (match) {
+            const timestampValue = new Date(match[0]).toISOString()
+            const preview = line.substring(0, PREVIEW_MAX_LENGTH) + '...'
+            return {
+                content: { raw: line, timestamp: timestampValue },
+                fileName,
+                timestamp: timestampValue,
+                lineNumber: index + 1,
+                preview,
+            }
+        }
+    }
+    console.log(`No timestamp found for raw line in file ${fileName} at line ${index + 1}`)
+    return null
 }
 
 const parseLogEntry = (entry: any, fileName: string, index: number): LogEntry | null => {
